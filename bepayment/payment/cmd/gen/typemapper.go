@@ -1,6 +1,10 @@
 package main
 
-import "strings"
+import (
+	"fmt"
+	"go/ast"
+	"strings"
+)
 
 var pgxtype = map[string]string{
 	"pgtype.UUID":        "string",
@@ -20,4 +24,21 @@ func pgxTypeMapper(src string) string {
 	}
 
 	return src
+}
+
+func astExprToString(ex ast.Expr) string {
+	switch t := ex.(type) {
+	case *ast.Ident:
+		return t.Name
+	case *ast.StarExpr:
+		return "*" + astExprToString(t.X)
+	case *ast.ArrayType:
+		return "[]" + astExprToString(t.Elt)
+	case *ast.MapType:
+		return fmt.Sprintf("map[%s]%s", astExprToString(t.Key), astExprToString(t.Value))
+	case *ast.SelectorExpr:
+		return astExprToString(t.X) + "." + t.Sel.Name
+	default:
+		return fmt.Sprintf("%s", ex)
+	}
 }

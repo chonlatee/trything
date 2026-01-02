@@ -39,8 +39,12 @@ func main() {
 
 func (g *gen) run() error {
 	g.el = make([]entityInfo, 0)
-	return filepath.WalkDir("./internal/dbgen", g.walkFile)
+	err := filepath.WalkDir("./internal/dbgen", g.walkFile)
+	if err != nil {
+		return err
+	}
 
+	return nil
 }
 
 func (g *gen) walkFile(path string, dir fs.DirEntry, err error) error {
@@ -79,7 +83,7 @@ func (g *gen) walkFile(path string, dir fs.DirEntry, err error) error {
 		}
 
 		for i, v := range st.Fields.List {
-			srcType := g.exprToString(v.Type)
+			srcType := astExprToString(v.Type)
 			e.fields[i] = entityField{
 				name:    v.Names[0].Name,
 				srcType: srcType,
@@ -93,24 +97,4 @@ func (g *gen) walkFile(path string, dir fs.DirEntry, err error) error {
 	})
 
 	return nil
-}
-
-func (g *gen) exprToString(ex ast.Expr) string {
-	switch t := ex.(type) {
-	case *ast.Ident:
-		return t.Name
-	case *ast.StarExpr:
-		return "*" + g.exprToString(t.X)
-	case *ast.ArrayType:
-		return "[]" + g.exprToString(t.Elt)
-	case *ast.MapType:
-		return fmt.Sprintf("map[%s]%s", g.exprToString(t.Key), g.exprToString(t.Value))
-	case *ast.SelectorExpr:
-		if pkg, ok := t.X.(*ast.Ident); ok {
-			return fmt.Sprintf("%s.%s", pkg.Name, t.Sel.Name)
-		}
-		return t.Sel.Name
-	default:
-		return fmt.Sprintf("%s", ex)
-	}
 }
