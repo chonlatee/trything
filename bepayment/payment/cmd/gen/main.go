@@ -1,13 +1,19 @@
 package main
 
 import (
-	"fmt"
+	"bytes"
 	"go/ast"
+	"go/format"
 	"go/parser"
 	"go/token"
 	"io/fs"
 	"log"
+	"os"
 	"path/filepath"
+	"text/template"
+
+	"github.com/chonlatee/payment/internal/lib/typemapper"
+	"golang.org/x/tools/imports"
 )
 
 var fset = token.NewFileSet()
@@ -33,8 +39,6 @@ func main() {
 	if err := g.run(); err != nil {
 		log.Fatal(err)
 	}
-
-	fmt.Printf("entity list: %+v\n", g.el)
 }
 
 func (g *gen) run() error {
@@ -44,10 +48,14 @@ func (g *gen) run() error {
 		return err
 	}
 
+	g.generateEntity()
+	g.generateModelToEntity()
+
 	return nil
 }
 
 func (g *gen) walkFile(path string, dir fs.DirEntry, err error) error {
+
 	if err != nil {
 		return err
 	}
@@ -83,11 +91,11 @@ func (g *gen) walkFile(path string, dir fs.DirEntry, err error) error {
 		}
 
 		for i, v := range st.Fields.List {
-			srcType := astExprToString(v.Type)
+			srcType := typemapper.AstExprToString(v.Type)
 			e.fields[i] = entityField{
 				name:    v.Names[0].Name,
 				srcType: srcType,
-				dstType: pgxTypeMapper(srcType),
+				dstType: typemapper.PgxTypeMapper(srcType),
 			}
 		}
 
@@ -97,4 +105,64 @@ func (g *gen) walkFile(path string, dir fs.DirEntry, err error) error {
 	})
 
 	return nil
+}
+
+func (g *gen) generateEntity() {
+	t, err := os.ReadFile("./internal/tpl/entity.tpl")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fnc := template.FuncMap{
+		"getEntityList": func() []entityInfo {
+			return g.el
+		},
+		"getEntityName": func(e entityInfo) string {
+			return e.name
+		},
+		"getEntityFields": func(e entityInfo) []entityField {
+			return e.fields
+		},
+		"getEntityFieldName": func(e entityField) string {
+			return e.name
+		},
+		"getEntityFieldType": func(e entityField) string {
+			return e.dstType
+		},
+	}
+
+	tpl := template.Must(template.New("entity").Funcs(fnc).Parse(string(t)))
+
+	var buf bytes.Buffer
+
+	err = tpl.Execute(&buf, g.el)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	r, err := format.Source(buf.Bytes())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	out, err := imports.Process("entity.go", r, &imports.Options{
+		Comments:  true,
+		TabWidth:  4,
+		TabIndent: true,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = os.WriteFile("./internal/entity/entity.go", out, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("generate entity success.")
+}
+
+func (g *gen) generateModelToEntity() {
+
 }

@@ -1,4 +1,4 @@
-package main
+package typemapper
 
 import (
 	"fmt"
@@ -9,35 +9,36 @@ import (
 var pgxtype = map[string]string{
 	"pgtype.UUID":        "string",
 	"pgtype.Numeric":     "float64",
-	"pgtype.Timestamptz": "time.Timestamptz",
+	"pgtype.Timestamptz": "time.Time",
 	"pgtype.Bool":        "bool",
+	"pgtype.Text":        "string",
 }
 
-func pgxTypeMapper(src string) string {
+func PgxTypeMapper(src string) string {
 	if v, ok := pgxtype[src]; ok {
 		return v
 	}
 
 	// []pgtype.xxx
 	if strings.HasPrefix(src, "[]") {
-		return "[]" + pgxTypeMapper(src[2:])
+		return "[]" + PgxTypeMapper(src[2:])
 	}
 
 	return src
 }
 
-func astExprToString(ex ast.Expr) string {
+func AstExprToString(ex ast.Expr) string {
 	switch t := ex.(type) {
 	case *ast.Ident:
 		return t.Name
 	case *ast.StarExpr:
-		return "*" + astExprToString(t.X)
+		return "*" + AstExprToString(t.X)
 	case *ast.ArrayType:
-		return "[]" + astExprToString(t.Elt)
+		return "[]" + AstExprToString(t.Elt)
 	case *ast.MapType:
-		return fmt.Sprintf("map[%s]%s", astExprToString(t.Key), astExprToString(t.Value))
+		return fmt.Sprintf("map[%s]%s", AstExprToString(t.Key), AstExprToString(t.Value))
 	case *ast.SelectorExpr:
-		return astExprToString(t.X) + "." + t.Sel.Name
+		return AstExprToString(t.X) + "." + t.Sel.Name
 	default:
 		return fmt.Sprintf("%s", ex)
 	}

@@ -11,33 +11,70 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const listAllLink = `-- name: ListAllLink :many
-select id, username, amount, link, created_datetime, updated_datetime from link_info
+const linkInfo_InsertLinks = `-- name: LinkInfo_InsertLinks :exec
+insert into link_info (id, username, amount, link, description, created_datetime, updated_datetime) 
+select 
+    unnest($1::uuid[]),
+    unnest($2::varchar(100)[]),
+    unnest($3::decimal(10, 2)[]),
+    unnest($4::text[]),
+    unnest($5::text[]),
+    unnest($6::timestamptz[]),
+    unnest($7::timestamptz[])
 `
 
-type ListAllLinkRow struct {
+type LinkInfo_InsertLinksParams struct {
+	Ids              []pgtype.UUID
+	Usernames        []string
+	Amounts          []pgtype.Numeric
+	Links            []string
+	Descriptions     []string
+	Createddatetimes []pgtype.Timestamptz
+	Updateddatetimes []pgtype.Timestamptz
+}
+
+func (q *Queries) LinkInfo_InsertLinks(ctx context.Context, arg LinkInfo_InsertLinksParams) error {
+	_, err := q.db.Exec(ctx, linkInfo_InsertLinks,
+		arg.Ids,
+		arg.Usernames,
+		arg.Amounts,
+		arg.Links,
+		arg.Descriptions,
+		arg.Createddatetimes,
+		arg.Updateddatetimes,
+	)
+	return err
+}
+
+const linkInfo_ListAllLink = `-- name: LinkInfo_ListAllLink :many
+select id, username, amount, link, description, created_datetime, updated_datetime from link_info
+`
+
+type LinkInfo_ListAllLinkRow struct {
 	ID              pgtype.UUID
 	Username        string
 	Amount          pgtype.Numeric
 	Link            string
+	Description     pgtype.Text
 	CreatedDatetime pgtype.Timestamptz
 	UpdatedDatetime pgtype.Timestamptz
 }
 
-func (q *Queries) ListAllLink(ctx context.Context) ([]ListAllLinkRow, error) {
-	rows, err := q.db.Query(ctx, listAllLink)
+func (q *Queries) LinkInfo_ListAllLink(ctx context.Context) ([]LinkInfo_ListAllLinkRow, error) {
+	rows, err := q.db.Query(ctx, linkInfo_ListAllLink)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListAllLinkRow
+	var items []LinkInfo_ListAllLinkRow
 	for rows.Next() {
-		var i ListAllLinkRow
+		var i LinkInfo_ListAllLinkRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Username,
 			&i.Amount,
 			&i.Link,
+			&i.Description,
 			&i.CreatedDatetime,
 			&i.UpdatedDatetime,
 		); err != nil {
@@ -51,33 +88,35 @@ func (q *Queries) ListAllLink(ctx context.Context) ([]ListAllLinkRow, error) {
 	return items, nil
 }
 
-const listLinkByUsername = `-- name: ListLinkByUsername :many
-select id, username, amount, link, created_datetime, updated_datetime from link_info where username = $1
+const linkInfo_ListLinkByUsername = `-- name: LinkInfo_ListLinkByUsername :many
+select id, username, amount, link, description, created_datetime, updated_datetime from link_info where username = $1
 `
 
-type ListLinkByUsernameRow struct {
+type LinkInfo_ListLinkByUsernameRow struct {
 	ID              pgtype.UUID
 	Username        string
 	Amount          pgtype.Numeric
 	Link            string
+	Description     pgtype.Text
 	CreatedDatetime pgtype.Timestamptz
 	UpdatedDatetime pgtype.Timestamptz
 }
 
-func (q *Queries) ListLinkByUsername(ctx context.Context, username string) ([]ListLinkByUsernameRow, error) {
-	rows, err := q.db.Query(ctx, listLinkByUsername, username)
+func (q *Queries) LinkInfo_ListLinkByUsername(ctx context.Context, username string) ([]LinkInfo_ListLinkByUsernameRow, error) {
+	rows, err := q.db.Query(ctx, linkInfo_ListLinkByUsername, username)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListLinkByUsernameRow
+	var items []LinkInfo_ListLinkByUsernameRow
 	for rows.Next() {
-		var i ListLinkByUsernameRow
+		var i LinkInfo_ListLinkByUsernameRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Username,
 			&i.Amount,
 			&i.Link,
+			&i.Description,
 			&i.CreatedDatetime,
 			&i.UpdatedDatetime,
 		); err != nil {

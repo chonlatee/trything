@@ -1,4 +1,4 @@
-package main
+package typemapper
 
 import (
 	"go/ast"
@@ -36,7 +36,7 @@ func Test_pgxTypeMapper(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := pgxTypeMapper(tc.src)
+			got := PgxTypeMapper(tc.src)
 			if got != tc.dst {
 				t.Errorf("got %s want %s", got, tc.dst)
 			}
@@ -152,7 +152,7 @@ func Test_astExprToString(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := astExprToString(tc.expr)
+			got := AstExprToString(tc.expr)
 			if tc.want != got {
 				t.Errorf("got %s want %s", got, tc.want)
 			}

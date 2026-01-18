@@ -13,6 +13,16 @@ type LinkInfo struct {
 	Amount          pgtype.Numeric
 	Username        string
 	Link            string
+	Description     pgtype.Text
+	CreatedDatetime pgtype.Timestamptz
+	UpdatedDatetime pgtype.Timestamptz
+}
+
+type User struct {
+	ID              pgtype.UUID
+	Username        string
+	FirstName       string
+	LastName        string
 	CreatedDatetime pgtype.Timestamptz
 	UpdatedDatetime pgtype.Timestamptz
 }
