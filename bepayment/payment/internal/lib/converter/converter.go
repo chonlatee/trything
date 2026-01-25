@@ -1,6 +1,7 @@
 package converter
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -83,4 +84,88 @@ func TimeToPgtypeTimestamptz(in time.Time) (pgtype.Timestamptz, error) {
 	}
 
 	return out, nil
+}
+
+func PgtypeUUIDsToStrings(in []pgtype.UUID) ([]string, error) {
+
+	out := make([]string, len(in))
+
+	for i, o := range in {
+		if !o.Valid {
+			return nil, fmt.Errorf("%s not valid uuid", in[i].Bytes)
+		}
+		out[i] = o.String()
+	}
+
+	return out, nil
+}
+
+func PgtypeNumericsToFloat64s(in []pgtype.Numeric) ([]float64, error) {
+	out := make([]float64, len(in))
+
+	for i, o := range in {
+		if !o.Valid {
+			return nil, fmt.Errorf("index %d not valid", i)
+		}
+
+		r, err := o.Float64Value()
+		if err != nil {
+			return nil, err
+		}
+
+		out[i] = r.Float64
+	}
+
+	return out, nil
+}
+
+func PgtypeTimestamptzsToTimes(in []pgtype.Timestamptz) ([]time.Time, error) {
+	out := make([]time.Time, len(in))
+	for i, o := range in {
+		if !o.Valid {
+			return nil, fmt.Errorf("index %d not valid", i)
+		}
+
+		out[i] = o.Time
+
+	}
+
+	return out, nil
+}
+
+func PgtypeUUIDToString(in pgtype.UUID) (string, error) {
+	if !in.Valid {
+		return "", fmt.Errorf("uuid not valid")
+	}
+
+	return in.String(), nil
+}
+
+func PgtypeNumericToFloat64(in pgtype.Numeric) (float64, error) {
+	if !in.Valid {
+		return 0, fmt.Errorf("value not valid")
+	}
+
+	r, err := in.Float64Value()
+	if err != nil {
+		return 0, fmt.Errorf("cat not get float64 value")
+	}
+
+	return r.Float64, nil
+}
+
+func PgtypeTextToString(in pgtype.Text) (string, error) {
+	if !in.Valid {
+		return "", fmt.Errorf("value not valid")
+	}
+
+	return in.String, nil
+}
+
+func PgtypeTimestamptzToTime(in pgtype.Timestamptz) (time.Time, error) {
+	if !in.Valid {
+		return time.Time{}, fmt.Errorf("value not valid")
+	}
+
+	return in.Time, nil
 }

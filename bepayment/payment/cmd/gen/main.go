@@ -51,6 +51,7 @@ func (g *gen) run() error {
 
 	g.generateEntity()
 	g.generateModelToEntity()
+	g.generateEntityToModel()
 
 	return nil
 }
@@ -266,5 +267,106 @@ func (g *gen) generateModelToEntity() {
 	}
 
 	log.Println("generate entity to model success.")
+}
+
+func (g *gen) generateEntityToModel() {
+	t, err := os.ReadFile("./internal/tpl/modelToEntity.tpl")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fnc := template.FuncMap{
+		"getEntityList": func() []entityInfo {
+			return g.el
+		},
+		"getEntityName": func(e entityInfo) string {
+			return e.name
+		},
+		"getModelName": func(e entityInfo) string {
+			return e.name
+		},
+		"getEntityFields": func(e entityInfo) []entityField {
+			return e.fields
+		},
+		"getEntityFieldName": func(e entityField) string {
+			return e.name
+		},
+		"getEntityFieldType": func(e entityField) string {
+			return e.dstType
+		},
+		"getEntityFieldSrcType": func(e entityField) string {
+			return e.srcType
+		},
+		"getModelFieldValue": func(e entityField) string {
+			if e.dstType == "[]string" && e.srcType == "[]pgtype.UUID" {
+				return fmt.Sprintf("converter.PgtypeUUIDsToStrings(input.%s)", e.name)
+			}
+
+			if e.dstType == "[]float64" && e.srcType == "[]pgtype.Numeric" {
+				return fmt.Sprintf("converter.PgtypeNumericsToFloat64s(input.%s)", e.name)
+			}
+
+			if e.dstType == "[]time.Time" && e.srcType == "[]pgtype.Timestamptz" {
+				return fmt.Sprintf("converter.PgtypeTimestamptzsToTimes(input.%s)", e.name)
+			}
+
+			if e.dstType == "[]string" && e.srcType == "[]string" {
+				return fmt.Sprintf("input.%s", e.name)
+			}
+
+			if e.dstType == "string" && e.srcType == "pgtype.UUID" {
+				return fmt.Sprintf("converter.PgtypeUUIDToString(input.%s)", e.name)
+			}
+
+			if e.dstType == "float64" && e.srcType == "pgtype.Numeric" {
+				return fmt.Sprintf("converter.PgtypeNumericToFloat64(input.%s)", e.name)
+			}
+
+			if e.dstType == "string" && e.srcType == "pgtype.Text" {
+				return fmt.Sprintf("converter.PgtypeTextToString(input.%s)", e.name)
+			}
+
+			if e.dstType == "time.Time" && e.srcType == "pgtype.Timestamptz" {
+				return fmt.Sprintf("converter.PgtypeTimestamptzToTime(input.%s)", e.name)
+			}
+
+			return fmt.Sprintf("input.%s", e.name)
+		},
+
+		"needConvert": func(e entityField) bool {
+			return e.dstType != e.srcType
+		},
+	}
+
+	tpl := template.Must(template.New("modelToEntity").Funcs(fnc).Parse(string(t)))
+
+	var buf bytes.Buffer
+
+	err = tpl.Execute(&buf, g.el)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	r, err := format.Source(buf.Bytes())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	out, err := imports.Process("modelToEntity.go", r, &imports.Options{
+		Comments:  true,
+		TabWidth:  4,
+		TabIndent: true,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = os.WriteFile("./internal/entity/modelToEntity.go", out, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("generate model to entity success.")
 
 }
