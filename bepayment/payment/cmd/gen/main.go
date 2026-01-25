@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/format"
 	"go/parser"
@@ -120,6 +121,9 @@ func (g *gen) generateEntity() {
 		"getEntityName": func(e entityInfo) string {
 			return e.name
 		},
+		"getModelName": func(e entityInfo) string {
+			return e.name
+		},
 		"getEntityFields": func(e entityInfo) []entityField {
 			return e.fields
 		},
@@ -164,5 +168,76 @@ func (g *gen) generateEntity() {
 }
 
 func (g *gen) generateModelToEntity() {
+	t, err := os.ReadFile("./internal/tpl/entityToModel.tpl")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fnc := template.FuncMap{
+		"getEntityList": func() []entityInfo {
+			return g.el
+		},
+		"getEntityName": func(e entityInfo) string {
+			return e.name
+		},
+		"getModelName": func(e entityInfo) string {
+			return e.name
+		},
+		"getEntityFields": func(e entityInfo) []entityField {
+			return e.fields
+		},
+		"getEntityFieldName": func(e entityField) string {
+			return e.name
+		},
+		"getEntityFieldType": func(e entityField) string {
+			return e.dstType
+		},
+		"getEntityFieldValue": func(e entityField) string {
+			if e.dstType == "[]string" && e.srcType == "[]pgtype.UUID" {
+				return fmt.Sprintf("converter.StringsToPgTypeUUIDs(input.%s)", e.name)
+			}
+
+			if e.dstType == "[]string" && e.srcType == "[]string" {
+				return fmt.Sprintf("input.%s", e.name)
+			}
+
+			return e.dstType
+		},
+
+		"needConvert": func(e entityField) bool {
+			return e.dstType != e.srcType
+		},
+	}
+
+	tpl := template.Must(template.New("entityToModel").Funcs(fnc).Parse(string(t)))
+
+	var buf bytes.Buffer
+
+	err = tpl.Execute(&buf, g.el)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	r, err := format.Source(buf.Bytes())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	out, err := imports.Process("entitiToModel.go", r, &imports.Options{
+		Comments:  true,
+		TabWidth:  4,
+		TabIndent: true,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = os.WriteFile("./internal/entity/entityToModel.go", out, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("generate entity to model success.")
 
 }
