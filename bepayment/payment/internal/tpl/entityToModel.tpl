@@ -6,17 +6,16 @@ package entity
 
 
 func {{ getEntityName .}}ToModel(input {{ getEntityName .}}) (*dbgen.{{ getModelName .}}, error) {
-    var err error
     v := &dbgen.{{ getModelName .}}{}
-{{- range getEntityFields .}}
+{{- range $i, $f := getEntityFields .}}
 
     {{ if needConvert .}}
 
-    r, err := {{ getEntityFieldValue .}}
-    if err != nil {
-        return nil, err
+    r{{ $i }}, err{{ $i }} := {{ getEntityFieldValue .}}
+    if err{{ $i }} != nil {
+        return nil, err{{ $i }}
     }
-    v.{{ getEntityFieldName .}} = r
+    v.{{ getEntityFieldName .}} = r{{ $i }}
     {{ else }}
     v.{{ getEntityFieldName .}} = input.{{ getEntityFieldName .}}
     {{ end }}

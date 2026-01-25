@@ -3,181 +3,174 @@
 package entity
 
 import (
-	"time"
-
 	"github.com/chonlatee/payment/internal/dbgen"
 	"github.com/chonlatee/payment/internal/lib/converter"
 )
 
 func LinkInfo_InsertLinksParamsToModel(input LinkInfo_InsertLinksParams) (*dbgen.LinkInfo_InsertLinksParams, error) {
-	var err error
 	v := &dbgen.LinkInfo_InsertLinksParams{}
 
-	r, err := converter.StringsToPgTypeUUIDs(input.Ids)
-	if err != nil {
-		return nil, err
+	r0, err0 := converter.StringsToPgTypeUUIDs(input.Ids)
+	if err0 != nil {
+		return nil, err0
 	}
-	v.Ids = r
+	v.Ids = r0
 
 	v.Usernames = input.Usernames
 
-	r, err := []float64
-	if err != nil {
-		return nil, err
+	r2, err2 := converter.Float64sToPgTypeNumerics(input.Amounts)
+	if err2 != nil {
+		return nil, err2
 	}
-	v.Amounts = r
+	v.Amounts = r2
 
 	v.Links = input.Links
 
 	v.Descriptions = input.Descriptions
 
-	r, err := []time.Time
-	if err != nil {
-		return nil, err
+	r5, err5 := converter.TimesToPgTypeTimes(input.Createddatetimes)
+	if err5 != nil {
+		return nil, err5
 	}
-	v.Createddatetimes = r
+	v.Createddatetimes = r5
 
-	r, err := []time.Time
-	if err != nil {
-		return nil, err
+	r6, err6 := converter.TimesToPgTypeTimes(input.Updateddatetimes)
+	if err6 != nil {
+		return nil, err6
 	}
-	v.Updateddatetimes = r
+	v.Updateddatetimes = r6
 
 	return v, nil
 }
 
 func LinkInfo_ListAllLinkRowToModel(input LinkInfo_ListAllLinkRow) (*dbgen.LinkInfo_ListAllLinkRow, error) {
-	var err error
 	v := &dbgen.LinkInfo_ListAllLinkRow{}
 
-	r, err := string
-	if err != nil {
-		return nil, err
+	r0, err0 := converter.StringToPgtypeUUID(input.ID)
+	if err0 != nil {
+		return nil, err0
 	}
-	v.ID = r
+	v.ID = r0
 
 	v.Username = input.Username
 
-	r, err := float64
-	if err != nil {
-		return nil, err
+	r2, err2 := converter.Float64ToPgtypeNumeric(input.Amount)
+	if err2 != nil {
+		return nil, err2
 	}
-	v.Amount = r
+	v.Amount = r2
 
 	v.Link = input.Link
 
-	r, err := string
-	if err != nil {
-		return nil, err
+	r4, err4 := converter.StringToPgtypeText(input.Description)
+	if err4 != nil {
+		return nil, err4
 	}
-	v.Description = r
+	v.Description = r4
 
-	r, err := time.Time
-	if err != nil {
-		return nil, err
+	r5, err5 := converter.TimeToPgtypeTimestamptz(input.CreatedDatetime)
+	if err5 != nil {
+		return nil, err5
 	}
-	v.CreatedDatetime = r
+	v.CreatedDatetime = r5
 
-	r, err := time.Time
-	if err != nil {
-		return nil, err
+	r6, err6 := converter.TimeToPgtypeTimestamptz(input.UpdatedDatetime)
+	if err6 != nil {
+		return nil, err6
 	}
-	v.UpdatedDatetime = r
+	v.UpdatedDatetime = r6
 
 	return v, nil
 }
 
 func LinkInfo_ListLinkByUsernameRowToModel(input LinkInfo_ListLinkByUsernameRow) (*dbgen.LinkInfo_ListLinkByUsernameRow, error) {
-	var err error
 	v := &dbgen.LinkInfo_ListLinkByUsernameRow{}
 
-	r, err := string
-	if err != nil {
-		return nil, err
+	r0, err0 := converter.StringToPgtypeUUID(input.ID)
+	if err0 != nil {
+		return nil, err0
 	}
-	v.ID = r
+	v.ID = r0
 
 	v.Username = input.Username
 
-	r, err := float64
-	if err != nil {
-		return nil, err
+	r2, err2 := converter.Float64ToPgtypeNumeric(input.Amount)
+	if err2 != nil {
+		return nil, err2
 	}
-	v.Amount = r
+	v.Amount = r2
 
 	v.Link = input.Link
 
-	r, err := string
-	if err != nil {
-		return nil, err
+	r4, err4 := converter.StringToPgtypeText(input.Description)
+	if err4 != nil {
+		return nil, err4
 	}
-	v.Description = r
+	v.Description = r4
 
-	r, err := time.Time
-	if err != nil {
-		return nil, err
+	r5, err5 := converter.TimeToPgtypeTimestamptz(input.CreatedDatetime)
+	if err5 != nil {
+		return nil, err5
 	}
-	v.CreatedDatetime = r
+	v.CreatedDatetime = r5
 
-	r, err := time.Time
-	if err != nil {
-		return nil, err
+	r6, err6 := converter.TimeToPgtypeTimestamptz(input.UpdatedDatetime)
+	if err6 != nil {
+		return nil, err6
 	}
-	v.UpdatedDatetime = r
+	v.UpdatedDatetime = r6
 
 	return v, nil
 }
 
 func LinkInfoToModel(input LinkInfo) (*dbgen.LinkInfo, error) {
-	var err error
 	v := &dbgen.LinkInfo{}
 
-	r, err := string
-	if err != nil {
-		return nil, err
+	r0, err0 := converter.StringToPgtypeUUID(input.ID)
+	if err0 != nil {
+		return nil, err0
 	}
-	v.ID = r
+	v.ID = r0
 
-	r, err := float64
-	if err != nil {
-		return nil, err
+	r1, err1 := converter.Float64ToPgtypeNumeric(input.Amount)
+	if err1 != nil {
+		return nil, err1
 	}
-	v.Amount = r
+	v.Amount = r1
 
 	v.Username = input.Username
 
 	v.Link = input.Link
 
-	r, err := string
-	if err != nil {
-		return nil, err
+	r4, err4 := converter.StringToPgtypeText(input.Description)
+	if err4 != nil {
+		return nil, err4
 	}
-	v.Description = r
+	v.Description = r4
 
-	r, err := time.Time
-	if err != nil {
-		return nil, err
+	r5, err5 := converter.TimeToPgtypeTimestamptz(input.CreatedDatetime)
+	if err5 != nil {
+		return nil, err5
 	}
-	v.CreatedDatetime = r
+	v.CreatedDatetime = r5
 
-	r, err := time.Time
-	if err != nil {
-		return nil, err
+	r6, err6 := converter.TimeToPgtypeTimestamptz(input.UpdatedDatetime)
+	if err6 != nil {
+		return nil, err6
 	}
-	v.UpdatedDatetime = r
+	v.UpdatedDatetime = r6
 
 	return v, nil
 }
 
 func UserToModel(input User) (*dbgen.User, error) {
-	var err error
 	v := &dbgen.User{}
 
-	r, err := string
-	if err != nil {
-		return nil, err
+	r0, err0 := converter.StringToPgtypeUUID(input.ID)
+	if err0 != nil {
+		return nil, err0
 	}
-	v.ID = r
+	v.ID = r0
 
 	v.Username = input.Username
 
@@ -185,23 +178,22 @@ func UserToModel(input User) (*dbgen.User, error) {
 
 	v.LastName = input.LastName
 
-	r, err := time.Time
-	if err != nil {
-		return nil, err
+	r4, err4 := converter.TimeToPgtypeTimestamptz(input.CreatedDatetime)
+	if err4 != nil {
+		return nil, err4
 	}
-	v.CreatedDatetime = r
+	v.CreatedDatetime = r4
 
-	r, err := time.Time
-	if err != nil {
-		return nil, err
+	r5, err5 := converter.TimeToPgtypeTimestamptz(input.UpdatedDatetime)
+	if err5 != nil {
+		return nil, err5
 	}
-	v.UpdatedDatetime = r
+	v.UpdatedDatetime = r5
 
 	return v, nil
 }
 
 func User_GetAllUsersParamsToModel(input User_GetAllUsersParams) (*dbgen.User_GetAllUsersParams, error) {
-	var err error
 	v := &dbgen.User_GetAllUsersParams{}
 
 	v.Offset = input.Offset

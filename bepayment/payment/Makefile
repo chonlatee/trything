@@ -5,3 +5,5 @@ gen-sqlc:
 
 gen-entity:
 	go run cmd/gen/*.go
+
+gen: gen-sqlc gen-entity

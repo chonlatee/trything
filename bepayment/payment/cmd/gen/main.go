@@ -192,16 +192,43 @@ func (g *gen) generateModelToEntity() {
 		"getEntityFieldType": func(e entityField) string {
 			return e.dstType
 		},
+		"getEntityFieldSrcType": func(e entityField) string {
+			return e.srcType
+		},
 		"getEntityFieldValue": func(e entityField) string {
 			if e.dstType == "[]string" && e.srcType == "[]pgtype.UUID" {
 				return fmt.Sprintf("converter.StringsToPgTypeUUIDs(input.%s)", e.name)
+			}
+
+			if e.dstType == "[]float64" && e.srcType == "[]pgtype.Numeric" {
+				return fmt.Sprintf("converter.Float64sToPgTypeNumerics(input.%s)", e.name)
+			}
+
+			if e.dstType == "[]time.Time" && e.srcType == "[]pgtype.Timestamptz" {
+				return fmt.Sprintf("converter.TimesToPgTypeTimes(input.%s)", e.name)
 			}
 
 			if e.dstType == "[]string" && e.srcType == "[]string" {
 				return fmt.Sprintf("input.%s", e.name)
 			}
 
-			return e.dstType
+			if e.dstType == "string" && e.srcType == "pgtype.UUID" {
+				return fmt.Sprintf("converter.StringToPgtypeUUID(input.%s)", e.name)
+			}
+
+			if e.dstType == "float64" && e.srcType == "pgtype.Numeric" {
+				return fmt.Sprintf("converter.Float64ToPgtypeNumeric(input.%s)", e.name)
+			}
+
+			if e.dstType == "string" && e.srcType == "pgtype.Text" {
+				return fmt.Sprintf("converter.StringToPgtypeText(input.%s)", e.name)
+			}
+
+			if e.dstType == "time.Time" && e.srcType == "pgtype.Timestamptz" {
+				return fmt.Sprintf("converter.TimeToPgtypeTimestamptz(input.%s)", e.name)
+			}
+
+			return fmt.Sprintf("input.%s", e.name)
 		},
 
 		"needConvert": func(e entityField) bool {
