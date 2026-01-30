@@ -1,0 +1,9 @@
+version: "2"
+linters:
+  enable:
+    - mylinter
+  settings:
+    custom:
+      mylinter:
+        type: "module"
+        description: My private project linter
