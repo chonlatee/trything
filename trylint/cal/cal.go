@@ -9,12 +9,15 @@ func Add(a, b int) int {
 	return a + b
 }
 
-func ParseInt(v string) float64 {
-	_, err := strconv.Atoi(v)
+func ParseInt(v string) int64 {
+	r, err := convertInt(v)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	r1, err := strconv.ParseFloat(v, 64)
-	return r1
+	return r
+}
+
+func convertInt(v string) (int64, error) {
+	return strconv.ParseInt(v, 10, 64)
 }
