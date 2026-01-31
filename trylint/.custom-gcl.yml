@@ -2,3 +2,6 @@ version: v2.8.0
 plugins:
   - module: "trylint/mylinter"
     path: "./mylinter"
+
+  - module: "trylint/yourlinter"
+    path: "./yourlinter"

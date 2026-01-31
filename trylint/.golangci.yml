@@ -2,8 +2,14 @@ version: "2"
 linters:
   enable:
     - mylinter
+    - yourlinter
   settings:
     custom:
       mylinter:
         type: "module"
-        description: My private project linter
+        description: "My private project linter"
+      
+      yourlinter:
+        type: "module"
+        description: "Your private project linter"
+
